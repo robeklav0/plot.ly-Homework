@@ -1,84 +1,6 @@
-
-function getPlots(id) {
-  //Read samples.json
-      d3.json("samples.json").then (sampledata =>{
-          console.log(sampledata)
-          let ids = sampledata.samples[0].otu_ids;
-          console.log(ids)
-          let sampleValues =  sampledata.samples[0].sample_values.slice(0,10).reverse();
-          console.log(sampleValues)
-          let labels =  sampledata.samples[0].otu_labels.slice(0,10);
-          console.log (labels)
-      // get only top 10 otu ids for the plot OTU and reversing it. 
-          let OTU_top = ( sampledata.samples[0].otu_ids.slice(0, 10)).reverse();
-      // get the otu id's to the desired form for the plot
-          let OTU_id = OTU_top.map(d => "OTU " + d);
-          console.log(`OTU IDS: ${OTU_id}`)
-       // get the top 10 labels for the plot
-          let labels1 =  sampledata.samples[0].otu_labels.slice(0,10);
-          console.log(`OTU_labels: ${labels1}`)
-          let trace = {
-              x: sampleValues,
-              y: OTU_id,
-              text: labels,
-              marker: {
-              color: 'darkblue'},
-              type:"bar",
-              orientation: "h",
-          };
-          // create data variable
-          let data = [trace];
-  
-          // create layout variable to set plots layout
-          let layout = {
-              title: "Top 10 OTUs",
-              yaxis:{
-                  tickmode:"linear",
-              },
-              margin: {
-                  l: 100,
-                  r: 100,
-                  t: 100,
-                  b: 30
-              }
-          };
-  
-          // create the bar plot
-      Plotly.newPlot("bar", data, layout);
-        
-          let trace1 = {
-              x: sampledata.samples[0].otu_ids,
-              y: sampledata.samples[0].sample_values,
-              mode: "markers",
-              marker: {
-                  size: sampledata.samples[0].sample_values,
-                  color: sampledata.samples[0].otu_ids
-              },
-              text:  sampledata.samples[0].otu_labels
-  
-          };
-  
-          // set the layout for the bubble plot
-          let layout2 = {
-              xaxis:{title: "OTU IDs"},
-              height: 500,
-              width: 1200
-          };
-  
-          // creating data variable 
-          let data1 = [trace1];
-  
-      // create the bubble plot
-      Plotly.newPlot("bubble", data1, layout2); 
-      
-      });
-  }  
   // create the function to get the necessary data
-  
-  
-  
-  
-  function getDemoInfo(id) {
+    
+function getDemoInfo(id) {
   // read the json file to get data
       d3.json("samples.json").then((data)=> {
   // get the metadata info for the demographic panel
@@ -100,8 +22,8 @@ function getPlots(id) {
           });
           window.value1 = parseFloat(results.wfreq);
           console.log(value1);
-        
-
+          id=parseFloat(results.id)
+          console.log(id)
 
           // getting gauge set 
           let trace3 =  {
@@ -145,25 +67,97 @@ function getPlots(id) {
     
   }
  
-  // creating  function for change
-function optionChanged(id) {
-      getPlots(id);
-      getDemoInfo(id);
-      
-  }
-  
 
-  // creating function for initial data
-  function init() {
+function getPlots(id) {
+  //Read samples.json
+      d3.json("samples.json").then (sampledata =>{
+          console.log(sampledata)
+          let samples=sampledata.samples;
+          let resultsArray2 = samples.filter(item => item.id.toString() === id);
+          let results2=resultsArray2[0];
+        
+          let otu_ids = results2.otu_ids;
+          let otu_labels = results2.otu_labels;
+          let sample_values = results2.sample_values;
+        
+         
+          let trace = {
+              x: sample_values.slice(0,10).reverse(),
+              y: otu_ids.slice(0,10).map(otuID => `OTU ${otuID}`).reverse(),
+              text: otu_labels.slice(0,10).reverse(),
+              marker: {
+              color: 'darkblue'},
+              type:"bar",
+              orientation: "h",
+          };
+          // create data variable
+          let data = [trace];
+  
+          // create layout variable to set plots layout
+          let layout = {
+              title: "Top 10 OTUs",
+              yaxis:{
+                  tickmode:"linear",
+              },
+              margin: {
+                  l: 100,
+                  r: 100,
+                  t: 100,
+                  b: 30
+              }
+          };
+  
+          // create the bar plot
+      Plotly.newPlot("bar", data, layout);
+        
+            // set data for bubble plot
+              let trace1 = {
+              x: otu_ids,
+              y: sample_values,
+              text:  otu_labels,
+              mode: "markers",
+              marker: {
+                  size: sample_values,
+                  color: otu_ids,
+                  colorscale: "green"
+              }
+             
+  
+          };
+  
+          // set the layout for the bubble plot
+          let layout2 = {
+              title: "Bacteria cultures",
+              xaxis:{title: "OTU IDs"},
+              height: 500,
+              width: 1200,
+              hovermode: "closest",
+          };
+  
+          // creating data variable 
+          let data1 = [trace1];
+  
+      // create the bubble plot
+      Plotly.newPlot("bubble", data1, layout2); 
+      
+      });
+    
+    }  
+
+
+
+ // creating function for initial data
+function init() {
       // selecting dropdown menu 
      let dropdown = d3.select("#selDataset");
   
       d3.json("samples.json").then((data)=> {
-          console.log(data)
-  
+         
+        console.log(data)
+        
           // getting the id data to the dropdwown menu
           data.names.forEach(function(name) {
-              dropdown.append("option").text(name).property("value");
+              dropdown.append("option").text(name).property("value", name);
           });
   
           // call the functions to display the data and the plots to the page
@@ -173,6 +167,16 @@ function optionChanged(id) {
       });
   }
   
-  init();
- 
+// creating  function for change
+function optionChanged(id) {
+console.log("esto trabaja")  
+getPlots(id);
+getDemoInfo(id);
+        
+    } 
   
+
+  init();
+
+
+ 
